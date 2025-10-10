@@ -1,77 +1,71 @@
 import React, { useEffect, useState } from "react";
-import { getCommunityPosts, updateCommunityPost, deleteCommunityPost } from "../services/api";
+import { fetchGroups, createGroup, deleteGroup } from "../api/community"; // admin API functions
 
-const CommunityAdmin = () => {
-  const [posts, setPosts] = useState([]);
-  const [editingPost, setEditingPost] = useState(null);
-  const [content, setContent] = useState("");
+export default function AdminCommunity() {
+  const [groups, setGroups] = useState([]);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupDesc, setNewGroupDesc] = useState("");
+  const adminId = localStorage.getItem("adminId") || "ADMIN";
 
   useEffect(() => {
-    fetchPosts();
+    loadGroups();
   }, []);
 
-  const fetchPosts = async () => {
-    try {
-      const res = await getCommunityPosts();
-      setPosts(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  async function loadGroups() {
+    const res = await fetchGroups();
+    if (res.ok) setGroups(res.groups);
+  }
 
-  const handleEdit = (post) => {
-    setEditingPost(post._id);
-    setContent(post.content);
-  };
+  async function handleCreate() {
+    if (!newGroupName.trim()) return;
+    await createGroup({ name: newGroupName, description: newGroupDesc, adminId });
+    setNewGroupName("");
+    setNewGroupDesc("");
+    loadGroups();
+  }
 
-  const handleUpdate = async () => {
-    await updateCommunityPost(editingPost, { content });
-    setEditingPost(null);
-    setContent("");
-    fetchPosts();
-  };
-
-  const handleDelete = async (id) => {
-    await deleteCommunityPost(id);
-    fetchPosts();
-  };
+  async function handleDelete(groupId) {
+    if (!window.confirm("Are you sure to delete this group?")) return;
+    await deleteGroup(groupId);
+    loadGroups();
+  }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Community Management</h1>
+      <h1>Admin Community Control</h1>
 
-      {editingPost && (
-        <div>
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} />
-          <button onClick={handleUpdate}>Update Post</button>
-        </div>
-      )}
+      {/* Create Group */}
+      <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+        <h3>Create New Group</h3>
+        <input
+          placeholder="Group Name"
+          value={newGroupName}
+          onChange={(e) => setNewGroupName(e.target.value)}
+        />
+        <input
+          placeholder="Description"
+          value={newGroupDesc}
+          onChange={(e) => setNewGroupDesc(e.target.value)}
+        />
+        <button onClick={handleCreate}>Create Group</button>
+      </div>
 
-      <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px" }}>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Content</th>
-            <th>Created At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {posts.map((post) => (
-            <tr key={post._id}>
-              <td>{post.userName || "Anonymous"}</td>
-              <td>{post.content}</td>
-              <td>{new Date(post.createdAt).toLocaleDateString()}</td>
-              <td>
-                <button onClick={() => handleEdit(post)}>Edit</button>
-                <button onClick={() => handleDelete(post._id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* List Groups */}
+      <div>
+        <h3>Existing Groups</h3>
+        {groups.map((g) => (
+          <div key={g.id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
+            <strong>{g.name}</strong> - {g.description}
+            <button
+              style={{ marginLeft: "20px", color: "red" }}
+              onClick={() => handleDelete(g.id)}
+            >
+              Delete
+            </button>
+            <p>Members: {g.members.join(", ")}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default CommunityAdmin;
+}

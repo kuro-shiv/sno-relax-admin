@@ -2,7 +2,9 @@ import axios from "axios";
 
 // ✅ Always point to your backend server
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/admin";
-
+const BASE = process.env.REACT_APP_API_URL
+  ? `${process.env.REACT_APP_API_URL}/community`
+  : "http://localhost:5000/api/community";
 
 // ------------------ USERS ------------------
 
@@ -29,11 +31,25 @@ export const loginAdmin = (credentials) =>
 // Get chat stats for last 7 days
 export const getChatStats = () => axios.get(`${API_URL}/stats/chats`);
 
-// Community Posts
-export const getCommunityPosts = () => axios.get(`${API_URL}/community`);
-export const getCommunityPostById = (id) => axios.get(`${API_URL}/community/${id}`);
-export const updateCommunityPost = (id, data) => axios.put(`${API_URL}/community/${id}`, data);
-export const deleteCommunityPost = (id) => axios.delete(`${API_URL}/community/${id}`);
+// ------------------ COMMUNITY ------------------
+
+// Fetch all groups
+export async function fetchGroups() {
+  const res = await axios.get(`${BASE}/groups`);
+  return res.data;
+}
+
+// Create a new group
+export async function createGroup(data) {
+  const res = await axios.post(`${BASE}/create`, data);
+  return res.data;
+}
+
+// Delete a group
+export async function deleteGroup(groupId) {
+  const res = await axios.delete(`${BASE}/${groupId}`);
+  return res.data;
+}
 
 // ------------------ CONTENT ------------------
 
