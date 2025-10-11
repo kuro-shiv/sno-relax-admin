@@ -1,115 +1,135 @@
-import React, { useEffect, useState } from "react";
-import { fetchGroups, createGroup, deleteGroup } from "../api/admin";
+// src/pages/AdminCommunityChat.js
+import React, { useEffect, useState, useRef } from "react";
+import { fetchGroups } from "../api/admin";
+import axios from "axios";
 
-export default function AdminCommunity() {
+export default function AdminCommunityChat() {
   const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [newGroup, setNewGroup] = useState({ name: "", description: "" });
-  const [error, setError] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef(null);
 
-  const adminId = "ADMIN123"; // Replace with actual admin ID from auth
+  const adminId = "ADMIN123"; // replace with actual admin auth ID
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/community";
 
   // Load groups
   useEffect(() => {
+    async function loadGroups() {
+      try {
+        const res = await fetchGroups();
+        if (res.ok) setGroups(res.groups);
+      } catch (err) {
+        console.error("Error fetching groups:", err);
+      }
+    }
     loadGroups();
   }, []);
 
-  const loadGroups = async () => {
-    setLoading(true);
-    try {
-      const res = await fetchGroups();
-      if (res.ok) setGroups(res.groups);
-    } catch (err) {
-      console.error("Error loading groups:", err);
-      setError("Failed to load groups");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Load messages for selected group
+  useEffect(() => {
+    if (!selectedGroup) return;
 
-  // Create group
-  const handleCreate = async () => {
-    if (!newGroup.name.trim()) return setError("Group name required");
-    try {
-      const res = await createGroup({ ...newGroup, adminId });
-      if (res.ok) {
-        setGroups([...groups, res.group]);
-        setNewGroup({ name: "", description: "" });
-        setError("");
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/${selectedGroup.id}/messages`);
+        if (res.data.ok) setMessages(res.data.messages);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
       }
-    } catch (err) {
-      console.error("Create group failed:", err);
-      setError("Failed to create group");
-    }
-  };
+    }, 3000); // poll every 3s
 
-  // Delete group
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this group?")) return;
+    return () => clearInterval(interval);
+  }, [selectedGroup]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Send message
+  const handleSend = async () => {
+    if (!newMessage.trim()) return;
     try {
-      const res = await deleteGroup(id);
-      if (res.ok) {
-        setGroups(groups.filter((g) => g.id !== id));
-      }
+      await axios.post(`${API_BASE}/${selectedGroup.id}/message`, {
+        userId: adminId,
+        text: newMessage,
+      });
+      setNewMessage("");
+      // Optionally reload messages immediately
+      const res = await axios.get(`${API_BASE}/${selectedGroup.id}/messages`);
+      if (res.data.ok) setMessages(res.data.messages);
     } catch (err) {
-      console.error("Delete group failed:", err);
-      setError("Failed to delete group");
+      console.error("Error sending message:", err);
     }
   };
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white">
-      <h1 className="text-2xl font-bold mb-4">Community Groups Management</h1>
-
-      {/* Create new group */}
-      <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Create New Group</h2>
-        {error && <p className="text-red-400 mb-2">{error}</p>}
-        <input
-          type="text"
-          placeholder="Group Name"
-          value={newGroup.name}
-          onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-          className="p-2 mb-2 w-full rounded bg-gray-700 text-white"
-        />
-        <textarea
-          placeholder="Description (optional)"
-          value={newGroup.description}
-          onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-          className="p-2 mb-2 w-full rounded bg-gray-700 text-white"
-        />
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-bold"
-        >
-          Create Group
-        </button>
+    <div className="flex h-screen bg-white text-black">
+      {/* Sidebar */}
+      <div className="w-1/4 p-4 border-r border-gray-300">
+        <h2 className="text-xl font-bold mb-4">Groups</h2>
+        <ul className="space-y-2">
+          {groups.map((g) => (
+            <li
+              key={g.id}
+              className={`p-2 rounded cursor-pointer ${
+                selectedGroup?.id === g.id ? "bg-gray-200 font-bold" : "hover:bg-gray-100"
+              }`}
+              onClick={() => setSelectedGroup(g)}
+            >
+              {g.name}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Group List */}
-      <div className="p-4 bg-gray-800 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">Existing Groups</h2>
-        {loading ? (
-          <p>Loading groups...</p>
-        ) : groups.length === 0 ? (
-          <p>No groups available.</p>
-        ) : (
-          <ul className="space-y-3">
-            {groups.map((g) => (
-              <li key={g.id} className="flex justify-between items-center p-3 bg-gray-700 rounded">
-                <div>
-                  <h3 className="font-bold text-blue-400">{g.name}</h3>
-                  <p className="text-gray-300">{g.description}</p>
-                </div>
-                <button
-                  onClick={() => handleDelete(g.id)}
-                  className="px-3 py-1 bg-red-500 hover:bg-red-600 rounded font-bold"
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedGroup ? (
+          <>
+            <div className="p-4 border-b border-gray-300 font-semibold text-lg">
+              {selectedGroup.name} - Admin Chat
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50">
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`max-w-xs p-2 rounded ${
+                    m.userId === adminId ? "ml-auto bg-blue-200" : "mr-auto bg-gray-200"
+                  }`}
                 >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <span className="text-xs font-bold">
+                    {m.userId === adminId ? "Admin" : m.userId}
+                  </span>
+                  <p>{m.text}</p>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="p-4 border-t border-gray-300 flex gap-2">
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 rounded px-3 py-2"
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              />
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={handleSend}
+              >
+                Send
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500">
+            Select a group to start chatting
+          </div>
         )}
       </div>
     </div>
