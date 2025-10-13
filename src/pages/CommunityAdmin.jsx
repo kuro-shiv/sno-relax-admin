@@ -40,7 +40,7 @@ export default function AdminCommunityChat() {
     }, 3000); // poll every 3s
 
     return () => clearInterval(interval);
-  }, [selectedGroup]);
+  }, [API_BASE, selectedGroup]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
