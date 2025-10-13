@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://sno-relax-server.onrender.com/api/admin"; // your server URL
+const API_URL = "https://sno-relax-server.onrender.com"; // your server URL
 
 export const getGroups = async () => {
   return axios.get(`${API_URL}/groups`);
