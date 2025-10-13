@@ -1,10 +1,11 @@
+// src/pages/Content.js
 import React, { useEffect, useState } from "react";
 import {
   getContent,
   createContent,
   updateContent,
   deleteContent,
-} from "../services/api";
+} from "../api/api"; // Make sure this points to your API file
 import ContentTable from "../components/ContentTable";
 
 const Content = () => {
@@ -12,26 +13,29 @@ const Content = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchContent();
   }, []);
 
   const fetchContent = async () => {
+    setLoading(true);
     try {
       const res = await getContent();
-      setContentList(res.data);
+      setContentList(res.data || []);
     } catch (err) {
       console.error("Error fetching content:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAdd = async () => {
-    if (!title || !description) return;
+    if (!title.trim() || !description.trim()) return;
     try {
       await createContent({ title, description });
-      setTitle("");
-      setDescription("");
+      resetForm();
       fetchContent();
     } catch (err) {
       console.error("Error adding content:", err);
@@ -45,11 +49,10 @@ const Content = () => {
   };
 
   const handleUpdate = async () => {
+    if (!editingId) return;
     try {
       await updateContent(editingId, { title, description });
-      setEditingId(null);
-      setTitle("");
-      setDescription("");
+      resetForm();
       fetchContent();
     } catch (err) {
       console.error("Error updating content:", err);
@@ -57,6 +60,7 @@ const Content = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this content?")) return;
     try {
       await deleteContent(id);
       fetchContent();
@@ -65,37 +69,48 @@ const Content = () => {
     }
   };
 
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle("");
+    setDescription("");
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Content Management</h1>
 
-      <div style={{ marginBottom: "20px" }}>
+      {/* Form */}
+      <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={{ marginRight: "10px" }}
         />
         <input
           type="text"
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ marginRight: "10px" }}
         />
         {editingId ? (
           <button onClick={handleUpdate}>Update</button>
         ) : (
           <button onClick={handleAdd}>Add</button>
         )}
+        {editingId && <button onClick={resetForm}>Cancel</button>}
       </div>
 
-      <ContentTable
-        contentList={contentList}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {/* Content Table */}
+      {loading ? (
+        <p>Loading content...</p>
+      ) : (
+        <ContentTable
+          contentList={contentList}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

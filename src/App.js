@@ -1,5 +1,6 @@
+// src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import Dashboard from "./pages/Dashboard";
@@ -9,12 +10,10 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import CommunityAdmin from "./pages/CommunityAdmin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
+// ---------------- Layout ----------------
 function AppLayout({ children }) {
-  const location = useLocation();
-  // Hide sidebar and topbar on login page
-  if (location.pathname === "/login") return <>{children}</>;
-
   return (
     <div style={{ display: "flex" }}>
       <Sidebar />
@@ -26,20 +25,77 @@ function AppLayout({ children }) {
   );
 }
 
+// ---------------- Layout Wrapper ----------------
+function LayoutRoute({ element: Element }) {
+  return <AppLayout><Element /></AppLayout>;
+}
+
+// ---------------- App ----------------
 function App() {
   return (
     <Router>
-      <AppLayout>
-        <Routes>
-          <Route path="/community-admin" element={<CommunityAdmin />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/content" element={<Content />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </AppLayout>
+      <Routes>
+        {/* Public Route */}
+        <Route 
+          path="/login" 
+          element={
+            localStorage.getItem("adminToken") ? <Navigate to="/" /> : <Login />
+          } 
+        />
+
+        {/* Protected Routes with Layout */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={Dashboard} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/users" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={Users} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/content" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={Content} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/reports" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={Reports} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={Settings} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/community-admin" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={CommunityAdmin} />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Catch-all redirect to dashboard */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </Router>
   );
 }

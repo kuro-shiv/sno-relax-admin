@@ -1,22 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginAdmin } from "../services/api";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [adminId, setAdminId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await loginAdmin({ email, password });
-      // save token to localStorage
-      localStorage.setItem("adminToken", res.data.token);
+
+    // Hardcoded admin credentials
+    if (adminId === "admin" && password === "pass") {
+      localStorage.setItem("adminToken", "dummyToken"); // save dummy token
       navigate("/"); // redirect to dashboard
-    } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+    } else {
+      setError("Invalid admin ID or password");
     }
   };
 
@@ -26,10 +25,10 @@ const Login = () => {
         <h2>Admin Login</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Admin ID"
+          value={adminId}
+          onChange={(e) => setAdminId(e.target.value)}
           required
           style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
         />

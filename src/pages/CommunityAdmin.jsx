@@ -1,24 +1,28 @@
-// src/pages/AdminCommunityChat.js
+// src/pages/CommunityAdmin.js
 import React, { useEffect, useState, useRef } from "react";
-import { fetchGroups } from "../api/api";
+import { fetchGroups } from "../api/api"; // Make sure api.js is in src/api/api.js
 import axios from "axios";
 
-export default function AdminCommunityChat() {
+export default function CommunityAdmin() {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
 
-  const adminId = "ADMIN123"; // replace with actual admin auth ID
-  const API_BASE = process.env.REACT_APP_API_URL;
+  const adminId = "ADMIN123"; // Replace with actual admin auth ID
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/admin";
 
-  // Load groups
+  // ------------------- Load groups -------------------
   useEffect(() => {
     async function loadGroups() {
       try {
         const res = await fetchGroups();
-        if (res.ok) setGroups(res.groups);
+        if (res.ok) {
+          setGroups(res.groups);
+        } else {
+          console.error("Failed to load groups:", res);
+        }
       } catch (err) {
         console.error("Error fetching groups:", err);
       }
@@ -26,38 +30,40 @@ export default function AdminCommunityChat() {
     loadGroups();
   }, []);
 
-  // Load messages for selected group
+  // ------------------- Load messages for selected group -------------------
   useEffect(() => {
     if (!selectedGroup) return;
 
     const interval = setInterval(async () => {
       try {
-        const res = await axios.get(`${API_BASE}/${selectedGroup.id}/messages`);
+        const res = await axios.get(`${API_BASE}/community/${selectedGroup.id}/messages`);
         if (res.data.ok) setMessages(res.data.messages);
       } catch (err) {
         console.error("Error fetching messages:", err);
       }
-    }, 3000); // poll every 3s
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [API_BASE, selectedGroup]);
+  }, [selectedGroup, API_BASE]);
 
-  // Scroll to bottom on new messages
+  // ------------------- Scroll to bottom on new messages -------------------
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Send message
+  // ------------------- Send message -------------------
   const handleSend = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !selectedGroup) return;
+
     try {
-      await axios.post(`${API_BASE}/${selectedGroup.id}/message`, {
+      await axios.post(`${API_BASE}/community/${selectedGroup.id}/message`, {
         userId: adminId,
         text: newMessage,
       });
       setNewMessage("");
-      // Optionally reload messages immediately
-      const res = await axios.get(`${API_BASE}/${selectedGroup.id}/messages`);
+
+      // Reload messages immediately
+      const res = await axios.get(`${API_BASE}/community/${selectedGroup.id}/messages`);
       if (res.data.ok) setMessages(res.data.messages);
     } catch (err) {
       console.error("Error sending message:", err);
