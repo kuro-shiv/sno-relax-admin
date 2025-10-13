@@ -1,6 +1,6 @@
 // src/pages/AdminCommunityChat.js
 import React, { useEffect, useState, useRef } from "react";
-import { fetchGroups } from "../api/admin";
+import { fetchGroups } from "../api/api";
 import axios from "axios";
 
 export default function AdminCommunityChat() {

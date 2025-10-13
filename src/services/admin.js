@@ -1,19 +1,36 @@
 import axios from "axios";
 
-const API_URL = "https://sno-relax-server.onrender.com"; // your server URL
+const API_BASE = "https://sno-relax-server.onrender.com/api/admin"; // Your backend server URL
 
-export const getGroups = async () => {
-  return axios.get(`${API_URL}/groups`);
+// Fetch all groups
+export const fetchGroups = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/groups`);
+    return { ok: true, groups: res.data };
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+    return { ok: false, groups: [] };
+  }
 };
 
-export const createGroup = async (data) => {
-  return axios.post(`${API_URL}/create-group`, data);
+// Create new group
+export const createGroup = async (groupData) => {
+  try {
+    const res = await axios.post(`${API_BASE}/create-group`, groupData);
+    return { ok: true, group: res.data };
+  } catch (err) {
+    console.error("Error creating group:", err);
+    return { ok: false };
+  }
 };
 
+// Delete a group
 export const deleteGroup = async (groupId) => {
-  return axios.delete(`${API_URL}/delete-group/${groupId}`);
-};
-
-export const getUsers = async () => {
-  return axios.get(`${API_URL}/users`);
+  try {
+    const res = await axios.delete(`${API_BASE}/delete-group/${groupId}`);
+    return { ok: true };
+  } catch (err) {
+    console.error("Error deleting group:", err);
+    return { ok: false };
+  }
 };
