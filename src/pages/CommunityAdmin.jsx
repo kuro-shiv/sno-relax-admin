@@ -1,7 +1,6 @@
-// src/pages/CommunityAdmin.js
 import React, { useEffect, useState, useRef } from "react";
-import { fetchGroups } from "../api/api"; // Make sure api.js is in src/api/api.js
-import axios from "axios";
+import { fetchGroups } from "../api/api";
+import { io } from "socket.io-client";
 
 export default function CommunityAdmin() {
   const [groups, setGroups] = useState([]);
@@ -10,19 +9,16 @@ export default function CommunityAdmin() {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
 
-  const adminId = "ADMIN123"; // Replace with actual admin auth ID
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/admin";
+  const adminId = "ADMIN123"; // replace with actual admin ID
+  const SOCKET_URL = process.env.REACT_APP_API_URL; // e.g., http://localhost:5000
+  const [socket, setSocket] = useState(null);
 
-  // ------------------- Load groups -------------------
+  // Load groups
   useEffect(() => {
     async function loadGroups() {
       try {
         const res = await fetchGroups();
-        if (res.ok) {
-          setGroups(res.groups);
-        } else {
-          console.error("Failed to load groups:", res);
-        }
+        if (res.ok) setGroups(res.groups);
       } catch (err) {
         console.error("Error fetching groups:", err);
       }
@@ -30,44 +26,53 @@ export default function CommunityAdmin() {
     loadGroups();
   }, []);
 
-  // ------------------- Load messages for selected group -------------------
+  // Initialize Socket.IO
   useEffect(() => {
-    if (!selectedGroup) return;
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/community/${selectedGroup.id}/messages`);
-        if (res.data.ok) setMessages(res.data.messages);
-      } catch (err) {
-        console.error("Error fetching messages:", err);
+    newSocket.on("connect", () => console.log("Connected to socket:", newSocket.id));
+
+    // Receive new messages
+    newSocket.on("newMessage", (msg) => {
+      if (msg.groupId === selectedGroup?.id) {
+        setMessages((prev) => [...prev, msg]);
       }
-    }, 3000);
+    });
 
-    return () => clearInterval(interval);
-  }, [selectedGroup, API_BASE]);
+    return () => newSocket.disconnect();
+  }, [SOCKET_URL, selectedGroup]);
 
-  // ------------------- Scroll to bottom on new messages -------------------
+  // Join selected group
+  useEffect(() => {
+    if (!socket || !selectedGroup) return;
+
+    socket.emit("joinGroup", selectedGroup.id);
+    setMessages([]); // reset messages when switching groups
+
+    return () => socket.emit("leaveGroup", selectedGroup.id);
+  }, [socket, selectedGroup]);
+
+  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ------------------- Send message -------------------
-  const handleSend = async () => {
-    if (!newMessage.trim() || !selectedGroup) return;
+  // Send message
+  const handleSend = () => {
+    if (!newMessage.trim() || !socket || !selectedGroup) return;
 
-    try {
-      await axios.post(`${API_BASE}/community/${selectedGroup.id}/message`, {
-        userId: adminId,
-        text: newMessage,
-      });
-      setNewMessage("");
+    const message = {
+      id: Date.now(),
+      userId: adminId,
+      text: newMessage,
+      groupId: selectedGroup.id,
+      timestamp: new Date().toISOString(),
+    };
 
-      // Reload messages immediately
-      const res = await axios.get(`${API_BASE}/community/${selectedGroup.id}/messages`);
-      if (res.data.ok) setMessages(res.data.messages);
-    } catch (err) {
-      console.error("Error sending message:", err);
-    }
+    socket.emit("sendMessage", { groupId: selectedGroup.id, message });
+    setMessages((prev) => [...prev, message]);
+    setNewMessage("");
   };
 
   return (
