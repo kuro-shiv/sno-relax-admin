@@ -50,8 +50,11 @@ const Dashboard = () => {
         totalContent: contentRes.data.length,
       });
 
-      // Recent users & content (last 5)
-      setRecentUsers(usersRes.data.slice(-5).reverse());
+      // Recent users & content (last 5). Ensure each user has a 'name' property for display.
+      setRecentUsers(usersRes.data.map(u => ({
+        ...u,
+        name: u.firstName ? `${u.firstName} ${u.lastName || ''}`.trim() : (u.communityNickname || u.userId)
+      })).slice(-5).reverse());
       setRecentContent(contentRes.data.slice(-5).reverse());
 
       // Prepare content types pie chart

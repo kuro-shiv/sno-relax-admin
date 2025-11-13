@@ -58,6 +58,13 @@ export const deleteReport = (id) => axios.delete(`${API_URL}/report/${id}`).then
 // ------------------ RELATIONSHIPS / ANALYTICS ------------------
 export const getRelationshipsSummary = () => axios.get(`${API_URL}/relationships/summary`).then(res => res.data);
 
+// ------------------ USER PROFILE CHANGES (Audit Log) ------------------
+export const getProfileChanges = (userId, limit = 100) => 
+  axios.get(`${API_URL}/profile-changes`, { params: { userId, limit } }).then(res => res.data);
+
+export const logProfileChange = (userId, fieldName, oldValue, newValue, changedBy = 'user') =>
+  axios.post(`${API_URL}/profile-change`, { userId, fieldName, oldValue, newValue, changedBy }).then(res => res.data);
+
 // ------------------ PRIVATE MESSAGES (admin) ------------------
 export const fetchPrivateMessages = (userId) => axios.get(`${API_URL}/private-messages`, { params: { userId } }).then(res => res.data);
 export const sendPrivateMessageAdmin = (payload) => axios.post(`${API_URL}/private-message`, payload).then(res => res.data);

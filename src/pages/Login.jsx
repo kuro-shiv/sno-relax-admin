@@ -13,6 +13,7 @@ const Login = () => {
     // Hardcoded admin credentials
     if (adminId === "admin" && password === "pass") {
       localStorage.setItem("adminToken", "dummyToken"); // save dummy token
+      localStorage.setItem("adminId", adminId); // persist admin id so other admin pages can reference it
       navigate("/"); // redirect to dashboard
     } else {
       setError("Invalid admin ID or password");

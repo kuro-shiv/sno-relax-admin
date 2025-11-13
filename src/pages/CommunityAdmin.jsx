@@ -17,7 +17,7 @@ export default function CommunityAdmin() {
   // announcements removed from CommunityAdmin UI
   const messagesEndRef = useRef(null);
 
-  const adminId = "ADMIN123"; // replace with actual admin ID
+  const adminId = localStorage.getItem("adminId") || "admin"; // read admin id saved at login
   const SOCKET_URL = process.env.REACT_APP_API_URL; // e.g., http://localhost:5000
   const [socket, setSocket] = useState(null);
 

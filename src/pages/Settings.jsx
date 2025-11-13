@@ -4,7 +4,6 @@ import { getThemeSetting, updateThemeSetting } from "../services/api";
 const themes = [
   { id: "dark", name: "Dark" },
   { id: "light", name: "Light" },
-  { id: "therapist", name: "Therapist" },
 ];
 
 const Settings = () => {
@@ -45,7 +44,7 @@ const Settings = () => {
 
       <section style={{ marginTop: 12 }}>
         <h3>Global Theme</h3>
-        <p className="text-sm text-gray-600">Set the global theme that will be applied to clients. Allowed: dark, light, therapist.</p>
+  <p className="text-sm text-gray-600">Set the global theme that will be applied to clients. Allowed: dark, light.</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
           {themes.map((t) => (
             <button
