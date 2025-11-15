@@ -21,7 +21,7 @@ import {
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AA336A"];
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({ totalUsers: 0, totalChats: 0, totalContent: 0 });
+  const [stats, setStats] = useState({ totalUsers: 0, totalChats: 0, totalContent: 0, totalCommunityGroups: 0, totalCommunityMembers: 0 });
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentContent, setRecentContent] = useState([]);
   const [contentTypesData, setContentTypesData] = useState([]);
@@ -43,11 +43,28 @@ const Dashboard = () => {
         getChatStats(),
       ]);
 
+      // Fetch community groups data
+      let communityGroups = [];
+      try {
+        const communityRes = await fetch("http://localhost:5000/api/community/groups", {
+          credentials: "include"
+        });
+        communityGroups = await communityRes.json();
+      } catch (err) {
+        console.warn("Failed to fetch community groups:", err);
+      }
+
       // Stats cards
+      const totalCommunityMembers = Array.isArray(communityGroups) 
+        ? communityGroups.reduce((sum, g) => sum + (g.members?.length || 0), 0)
+        : 0;
+
       setStats({
         totalUsers: statsRes.data.totalUsers,
         totalChats: statsRes.data.totalChats,
         totalContent: contentRes.data.length,
+        totalCommunityGroups: Array.isArray(communityGroups) ? communityGroups.length : 0,
+        totalCommunityMembers: totalCommunityMembers,
       });
 
       // Recent users & content (last 5). Ensure each user has a 'name' property for display.
@@ -87,6 +104,14 @@ const Dashboard = () => {
             <div className="stat-value">{stats[`total${type}`]}</div>
           </div>
         ))}
+        <div className="stat-card" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
+          <h2 style={{ color: "white" }}>Community Groups</h2>
+          <div className="stat-value" style={{ color: "white" }}>{stats.totalCommunityGroups}</div>
+        </div>
+        <div className="stat-card" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", color: "white" }}>
+          <h2 style={{ color: "white" }}>Community Members</h2>
+          <div className="stat-value" style={{ color: "white" }}>{stats.totalCommunityMembers}</div>
+        </div>
       </div>
 
       {/* Recent Users Table */}

@@ -9,18 +9,22 @@ import Content from "./pages/Content";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
-import CommunityAdmin from "./pages/CommunityAdmin";
+import Community from "./pages/Community";
 import PrivateMessages from "./pages/PrivateMessages";
+import ProfileChanges from "./pages/ProfileChanges";
 import ProtectedRoute from "./components/ProtectedRoute";
+import "./App.css";
 
 // ---------------- Layout ----------------
 function AppLayout({ children }) {
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", height: "100vh", background: "#f9fafb" }}>
       <Sidebar />
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <Topbar />
-        {children}
+        <main style={{ flex: 1, overflow: "auto", padding: 0 }}>
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -78,6 +82,14 @@ function App() {
           } 
         />
         <Route 
+          path="/profile-changes" 
+          element={
+            <ProtectedRoute>
+              <LayoutRoute element={ProfileChanges} />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/settings" 
           element={
             <ProtectedRoute>
@@ -86,10 +98,10 @@ function App() {
           } 
         />
         <Route 
-          path="/community-admin" 
+          path="/community" 
           element={
             <ProtectedRoute>
-              <LayoutRoute element={CommunityAdmin} />
+              <LayoutRoute element={Community} />
             </ProtectedRoute>
           } 
         />
