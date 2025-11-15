@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import "../styles/admin.css";
 
 const UserTable = ({ users, onBan, onDelete, profileChanges = {} }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   // Helper function to check if a field was recently changed and get the change info
   const getFieldChangeInfo = (userId, fieldName) => {
     if (!profileChanges[userId]) return null;
@@ -39,9 +48,42 @@ const UserTable = ({ users, onBan, onDelete, profileChanges = {} }) => {
     return baseStyle;
   };
 
+  // Mobile card layout
+  if (isMobile) {
+    return (
+      <div className="user-cards">
+        {users.map((user, idx) => {
+          const mostRecentChange = getMostRecentChangeTime(user._id);
+          const fullName = (user.firstName || user.communityNickname) ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.communityNickname : user.userId;
+          return (
+            <div className="user-card" key={user._id}>
+              <div className="user-card-header">
+                <div className="user-card-index">#{idx + 1}</div>
+                <div className="user-card-name">{fullName}</div>
+                <div className="user-card-actions">
+                  <button className="btn btn-small" onClick={() => onBan(user._id, !user.banned)}>{user.banned ? 'Unban' : 'Ban'}</button>
+                  <button className="btn btn-danger btn-small" onClick={() => onDelete(user._id)}>Delete</button>
+                </div>
+              </div>
+              <div className="user-card-body">
+                <div><strong>ID:</strong> {user.userId}</div>
+                <div><strong>Email:</strong> {user.email || '-'}</div>
+                <div><strong>Phone:</strong> {user.phone || '-'}</div>
+                <div><strong>City:</strong> {user.city || '-'}</div>
+                <div><strong>Joined:</strong> {user.createdAt ? formatDate(user.createdAt) : '-'}</div>
+                <div><strong>Status:</strong> {user.banned ? <span className="status-banned">Banned</span> : <span className="status-active">Active</span>}</div>
+                <div><strong>Last Changed:</strong> {mostRecentChange ? formatDate(mostRecentChange) : '-'}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ width: '100%' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'Arial, sans-serif' }}>
+    <div className="table-wrap">
+      <table className="admin-table">
         <thead>
           <tr style={{ textAlign: 'left', background: '#f7f7f7' }}>
             <th style={{ padding: 8 }}>#</th>
@@ -63,7 +105,7 @@ const UserTable = ({ users, onBan, onDelete, profileChanges = {} }) => {
             const fullName = (user.firstName || user.communityNickname) ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.communityNickname : user.userId;
 
             return (
-              <tr key={user._id} style={{ borderTop: '1px solid #eee' }}>
+              <tr key={user._id} className="admin-row">
                 <td style={{ padding: 8, width: 40 }}>{idx + 1}</td>
                 <td style={getFieldStyle(user._id, 'userId')} title={getFieldChangeInfo(user._id, 'userId') ? `Changed on ${formatDate(getFieldChangeInfo(user._id, 'userId').changedAt)}` : ''}>
                   {user.userId}

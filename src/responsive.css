@@ -1,0 +1,364 @@
+/* ==================== RESPONSIVE STYLES ==================== */
+
+/* Tablet Breakpoint: 768px */
+@media (max-width: 768px) {
+  /* Hide sidebar on tablets and mobile, use hamburger menu instead */
+  .sidebar-container {
+    position: fixed !important;
+    left: -100% !important;
+    top: 0 !important;
+    width: 240px !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+    transition: left 0.3s ease !important;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;
+    padding: 24px 16px !important;
+    overflow-y: auto !important;
+  }
+
+  .sidebar-container.open {
+    left: 0 !important;
+  }
+
+  /* Show hamburger menu button */
+  .menu-button-mobile {
+    display: flex !important;
+  }
+
+  .sidebar-close {
+    display: block !important;
+  }
+
+  .app-layout {
+    flex-direction: column !important;
+  }
+
+  .main-wrapper {
+    margin-left: 0 !important;
+  }
+
+  /* Topbar adjustments */
+  .topbar {
+    flex-direction: row !important;
+    gap: 12px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .topbar-left {
+    width: 100% !important;
+  }
+
+  .topbar-right {
+    width: auto !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* Tables should be scrollable */
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    font-size: 12px !important;
+    min-width: 500px !important;
+  }
+
+  table th,
+  table td {
+    padding: 8px !important;
+  }
+
+  /* Button sizing for touch */
+  button {
+    min-height: 44px !important;
+    padding: 10px 16px !important;
+  }
+
+  /* Reduce padding on pages */
+  main {
+    padding: 12px !important;
+  }
+}
+
+/* Mobile Breakpoint: 480px */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 18px !important;
+  }
+
+  h2 {
+    font-size: 16px !important;
+  }
+
+  /* Topbar content stack vertically */
+  .topbar {
+    flex-direction: column;
+  }
+
+  .topbar-left,
+  .topbar-right {
+    width: 100%;
+  }
+
+  /* Hide less important columns in tables */
+  table .hide-mobile {
+    display: none;
+  }
+
+  /* Full width action buttons */
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+
+  /* Form inputs full width */
+  input,
+  select,
+  textarea {
+    width: 100% !important;
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95vw !important;
+    max-height: 90vh !important;
+  }
+
+  /* Reduce padding everywhere */
+  main {
+    padding: 8px !important;
+  }
+
+  /* Smaller font sizes on mobile */
+  body {
+    font-size: 14px;
+  }
+
+  table {
+    font-size: 11px !important;
+  }
+
+  table th,
+  table td {
+    padding: 4px !important;
+  }
+}
+
+/* Large screens optimization */
+@media (min-width: 1440px) {
+  .sidebar-container {
+    width: 280px;
+  }
+
+  .main-content {
+    max-width: 1400px;
+  }
+
+  /* Increase padding on larger screens */
+  main {
+    padding: 32px !important;
+  }
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.sidebar-container {
+  flex-shrink: 0;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  flex-shrink: 0;
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  background: #f9fafb;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive table wrapper */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+/* Responsive grid */
+.grid-responsive {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive flex container */
+.flex-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .flex-responsive {
+    flex-direction: column;
+  }
+}
+
+/* Modal backdrop */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Button group spacing */
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group button {
+    width: 100%;
+  }
+}
+
+/* Alert styling */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-info {
+  background: #dbeafe;
+  color: #0c4a6e;
+  border: 1px solid #bfdbfe;
+}
+
+.alert-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #fca5a5;
+}
+
+.alert-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Touch-friendly elements */
+@media (hover: none) {
+  button:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  a:active {
+    opacity: 0.8;
+  }
+}

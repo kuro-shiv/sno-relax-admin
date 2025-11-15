@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { LogOut, Bell, User } from "lucide-react";
+import { LogOut, Bell, User, Menu } from "lucide-react";
 
-const Topbar = () => {
+const Topbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [adminId, setAdminId] = useState("");
@@ -30,10 +30,11 @@ const Topbar = () => {
       "/": "Dashboard",
       "/users": "Users Management",
       "/content": "Content Management",
-      "/community-admin": "Community Control",
+      "/community": "Communities",
       "/private-messages": "Private Messages",
       "/reports": "Reports & Analytics",
-      "/settings": "Settings"
+      "/settings": "Settings",
+      "/profile-changes": "Profile Changes"
     };
     return titles[location.pathname] || "Dashboard";
   };
@@ -41,35 +42,57 @@ const Topbar = () => {
   return (
     <div style={{
       background: "linear-gradient(90deg, #ffffff 0%, #f9fafb 100%)",
-      padding: "16px 24px",
+      padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)",
       borderBottom: "1px solid #e5e7eb",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+      flexWrap: "wrap",
+      gap: "16px"
     }}>
+      {/* Menu button for mobile */}
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          style={{
+            background: "transparent",
+            border: "1px solid #e5e7eb",
+            padding: "8px 12px",
+            borderRadius: 6,
+            cursor: "pointer",
+            display: "none",
+            color: "#6b7280"
+          }}
+          className="menu-button-mobile"
+        >
+          <Menu size={20} />
+        </button>
+      )}
+
       {/* Left Side - Page Title */}
-      <div>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#111827" }}>{getPageTitle()}</h2>
-        <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "#6b7280" }}>
+      <div style={{ minWidth: "200px" }}>
+        <h2 style={{ margin: 0, fontSize: "clamp(16px, 5vw, 20px)", fontWeight: 700, color: "#111827" }}>{getPageTitle()}</h2>
+        <p style={{ margin: "4px 0 0 0", fontSize: "clamp(11px, 2vw, 12px)", color: "#6b7280" }}>
           {time.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })} · {time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
         </p>
       </div>
 
       {/* Right Side - Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: "clamp(8px, 2vw, 16px)", flexWrap: "wrap" }}>
         {/* Notification Bell */}
         <button style={{
           background: "transparent",
           border: "1px solid #e5e7eb",
-          padding: "8px 12px",
+          padding: "clamp(6px, 2vw, 8px) clamp(10px, 2vw, 12px)",
           borderRadius: 6,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           gap: 6,
           color: "#6b7280",
-          transition: "all 0.2s"
+          transition: "all 0.2s",
+          minHeight: "44px"
         }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#f3f4f6";
@@ -87,15 +110,16 @@ const Topbar = () => {
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
+          gap: "clamp(6px, 2vw, 8px)",
+          padding: "clamp(6px, 2vw, 8px) clamp(10px, 2vw, 12px)",
           background: "#f3f4f6",
-          borderRadius: 6
+          borderRadius: 6,
+          minHeight: "44px"
         }}>
-          <User size={18} style={{ color: "#6b7280" }} />
-          <div style={{ fontSize: 12 }}>
+          <User size={18} style={{ color: "#6b7280", flexShrink: 0 }} />
+          <div style={{ fontSize: "clamp(11px, 2vw, 12px)", minWidth: "80px" }}>
             <p style={{ margin: 0, fontWeight: 600, color: "#111827" }}>Admin</p>
-            <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>{adminId}</p>
+            <p style={{ margin: 0, fontSize: "clamp(10px, 1.5vw, 11px)", color: "#6b7280", wordBreak: "break-word" }}>{adminId}</p>
           </div>
         </div>
 
@@ -106,15 +130,17 @@ const Topbar = () => {
             background: "#ef4444",
             color: "white",
             border: "none",
-            padding: "8px 14px",
+            padding: "clamp(6px, 2vw, 8px) clamp(12px, 2vw, 14px)",
             borderRadius: 6,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             gap: 6,
-            fontSize: 13,
+            fontSize: "clamp(12px, 2vw, 13px)",
             fontWeight: 500,
-            transition: "all 0.2s"
+            transition: "all 0.2s",
+            minHeight: "44px",
+            whiteSpace: "nowrap"
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#dc2626";
@@ -124,7 +150,7 @@ const Topbar = () => {
           }}
         >
           <LogOut size={16} />
-          Logout
+          <span>Logout</span>
         </button>
       </div>
     </div>

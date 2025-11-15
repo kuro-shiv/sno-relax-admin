@@ -1,5 +1,5 @@
 // src/App.js
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
@@ -14,15 +14,20 @@ import PrivateMessages from "./pages/PrivateMessages";
 import ProfileChanges from "./pages/ProfileChanges";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
+import "./responsive.css";
 
 // ---------------- Layout ----------------
 function AppLayout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#f9fafb" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <Topbar />
-        <main style={{ flex: 1, overflow: "auto", padding: 0 }}>
+    <div className="app-layout" style={{ display: "flex", height: "100vh", background: "#f9fafb" }}>
+      <div className="sidebar-container" style={sidebarOpen ? { left: 0 } : {}}>
+        <Sidebar onClose={() => setSidebarOpen(false)} />
+      </div>
+      <div className="main-wrapper" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="main-content" style={{ flex: 1, overflow: "auto", padding: 0 }}>
           {children}
         </main>
       </div>
